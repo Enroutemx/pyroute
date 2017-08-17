@@ -1,0 +1,27 @@
+reports/
+venv/
+.idea/
+build/
+dist/
+*egg-info/
+*.pyc
+.DS_Store
+charmer.imi
+charmer.iml
+__pycache__/
+.cache/**
+.cache/
+tr_output.yml
+tr_output.txt
+atlassian-ide-plugin.xml
+test_temp_erase_this.py
+.pytest
+ghostdriver.log
+geckodriver.log
+jenkins-scripts/
+~
+
+# File used for testing grid dynamics cmp and unit tests
+configs/gd_cmp.yml
+configs/charmer_vendo_dependencies/test_charmer_dependencies.yml
+
