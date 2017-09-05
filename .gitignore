@@ -20,7 +20,7 @@ ghostdriver.log
 geckodriver.log
 jenkins-scripts/
 ~
-
+*.log
 # File used for testing grid dynamics cmp and unit tests
 configs/gd_cmp.yml
 configs/charmer_vendo_dependencies/test_charmer_dependencies.yml
