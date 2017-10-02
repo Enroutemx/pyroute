@@ -6,9 +6,10 @@ logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 
+# class Module(type, metaclass=ABCMeta):
 class Module(metaclass=ABCMeta):
 
-    @abstractmethod
+    # @abstractmethod
     def __init__(self, config, **kwargs):
         self.config = config
         if "defaults" in kwargs:

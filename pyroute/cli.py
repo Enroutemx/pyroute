@@ -14,11 +14,17 @@ def runnable():
 
 @runnable.command()
 def init():
+    """
+    Initialize a testing project, allows user to select different options.
+    """
     pass
 
 
 @runnable.command()
 def create():
+    """
+    Create page objects, custom modules, test data, etc. etc.
+    """
     pass
 
 
@@ -26,7 +32,10 @@ def create():
 @click.option('--config', default=DEFAULT_CONFIG_JSON,
               help='Location of config file')
 def run(config):
-    msg = 'Using default config.json location: {}'.format(config)
+    """
+    Allows you to run tests.
+    """
+    msg = 'Using config.json location: {}'.format(config)
 
     click.secho(msg, fg="cyan")
     Pyroute(config).execute_tests()
@@ -34,4 +43,7 @@ def run(config):
 
 @runnable.command()
 def shell():
+    """
+    Use an interactive shell to test your modules with Pyroute env.
+    """
     pass
