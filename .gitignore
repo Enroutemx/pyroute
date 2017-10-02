@@ -22,4 +22,6 @@ jenkins-scripts/
 ~
 *.log
 test.py
-
+dist/
+build/
+Pipfile.lock

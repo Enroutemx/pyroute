@@ -1,0 +1,11 @@
+WIP:
+
+1. Install pipenv on global python from your machine
+`pip install pipenv`
+
+2. Run `pipenv --three`
+
+3. Run `pipenv shell`
+
+4. Run `pipenv install '-e .' --dev`
+

@@ -1,0 +1,4 @@
+- Need to implement a good logging tool which allows me to set dynamic logging level from config file
+    A) Get rid of all "debugger" print statements.
+
+
