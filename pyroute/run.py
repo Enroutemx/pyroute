@@ -22,7 +22,7 @@ class Run(object):
         #       of executing a test.           #
         ########################################
         # initialize modules
-        modules = self.__load_modules()
+        self.__load_modules()
 
         I(self.module_list)
 
