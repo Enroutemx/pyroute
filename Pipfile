@@ -18,5 +18,3 @@ python_version = "3.6"
 "flake8" = "*"
 "-e ." = "*"
 "e1839a8" = {path = ".", editable = true}
-
-
