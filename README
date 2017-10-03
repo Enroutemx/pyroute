@@ -1,11 +1,25 @@
 WIP:
+h1. Setup dev environemnt
 
-1. Install pipenv on global python from your machine
-`pip install pipenv`
+ 1. Clone this repo, we use `develop` branch for development.
+ 2. Install pipenv on global python from your machine `pip install pipenv`
+ 3. Run `pipenv --three`
+ 4. Run `pipenv install '-e .' --dev`
+ 5. Go to your *~/.bashrc* or *~/.zshrc*
+ 6. Edit the file and issue these commands to setup an alias
+ 7. Restart your terminal
 
-2. Run `pipenv --three`
 
-3. Run `pipenv shell`
+**This works with zsh shell:**
+```
+# ——— PYROUTE ——— #
+export PYROUTEPATH=$HOME/Projects/pyroute
 
-4. Run `pipenv install '-e .' --dev`
+pyroute_activate(){
+    ssh-add ~/.ssh/ias/id_rsa
+    cd $PYROUTEPATH
+    pipenv shell
+}
+alias pyrouteenv=pyroute_activate
+```
 
