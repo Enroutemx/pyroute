@@ -16,10 +16,41 @@ h1. Setup dev environemnt
 export PYROUTEPATH=$HOME/Projects/pyroute
 
 pyroute_activate(){
-    ssh-add ~/.ssh/ias/id_rsa
+    ssh-add ~/.ssh/id_rsa
     cd $PYROUTEPATH
     pipenv shell
 }
 alias pyrouteenv=pyroute_activate
 ```
 
+* Create a test folder in different location than pyroute code.
+
+* Create a subfolder named `config`
+* Create a `config.json` file with this data
+```
+{
+    "tests": {
+        "path": [
+            "tests/sprint01_features"
+             ],
+        "preffix": "test_",
+        "data": "$PATH"
+    },
+    "modules": {
+        "REST": {
+            "timeout": "50000",
+            "endpoint": "http://google.com",
+            "reset_headers": "True",
+            "otro_param": "here"
+        },
+        "SSH": {
+            "computer": "computer_Service"
+        }
+    }
+
+}
+```
+* Create a `tests` folder
+* Create a file named `sprint01_features.py`
+
+# From this folder you're going to run `pyroute run` command.
