@@ -15,7 +15,8 @@ class ITester(object):
             method = getattr(module, attr)
             if hasattr(method, "__call__"):
                 return self.__MethodWrapper(method)
-            return method
+            else: next
+        return method
 
     def __load_modules(self):
         for module in self.config._modules:
