@@ -4,46 +4,51 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
 
+from pyroute.module import Module
 # This will be used later
 # from selenium.common.exceptions import HCExceptions
 
 
-class HeadlessChrome(object):
+class Headlesschrome(Module):
 
-    def __init__(self):
-        self._config = self._read_config('HC_config.json')
-        self._check_requirements()
-        self._before_init()
-        self._init()
-        self._after_init()
-        url = self._config["url"]
-        path = self._config["chromedriver_path"]
+    def __init__(self, config, **kwargs):
+
+        # Default values
+        self.defaults = {
+            "chromedriver_path": "/usr/lib/chromium-browser/chromedriver",
+            "chrome_path": "/usr/bin/chromium-browser",
+            "url": "https://enroute.xyz"
+        }
+        self.config_data = super().\
+            __init__(config=config, defaults=self.defaults)
+
+        self.module_config = self.config_data['defaults']
+        url = self.module_config["url"]
+        path = self.module_config["chromedriver_path"]
+        self._element_queue = []
+
+        # Set all options
+        self._c_options = Options()
+        self._c_options.add_argument("--headless")
+        self._c_options.binary_location = self.module_config["chrome_path"]
+
+        # The service is needed to actually start the browser
+        self._service = webdriver.chrome.service.Service(path)
+        self._service.start()
         self._start_browser(url, path, self._c_options)
 
     def _init(self):
-        path = self._config["chromedriver_path"]
-        self._service = webdriver.chrome.service.Service(path)
-        self._service.start()
+        pass
 
     def _before_init(self):
         pass
 
     def _after_init(self):
-        self._c_options = Options()
-        self._c_options.add_argument("--headless")
-        self._c_options.binary_location = self._config["chrome_path"]
+        pass
 
     def _check_requirements(self):
         """Implementation pending"""
         pass
-
-    # A method to read a config file is common to all modules,
-    # these should be defined in the Module Class
-    def _read_config(self, config_file):
-        def _is_valid_config():
-            pass
-        with open(config_file) as config_data:
-            return json.load(config_data)
 
     # Browser Methods
     def _start_browser(self, url, driver_path, options):
@@ -74,7 +79,7 @@ class HeadlessChrome(object):
         self._driver.quit()
 
     @property
-    def current_page(self):
+    def am_on(self):
         """
         This method returns the current page
         """
@@ -86,6 +91,32 @@ class HeadlessChrome(object):
         param: url - The URL to access
         """
         self._driver.get(url)
+    # Assertions
+    def confirm_title_includes(self, string):
+        return string in self._driver.title 
+
+    def page_title(self):
+        return self._driver.title
+
+    # Search and Selectors
+    def select_by_class(self, class_attr):
+        self._element_queue.append(self._driver.find_element_by_css_selector(class_attr))
+    
+    def select_by_xpath(self, xpath):
+        self._element_queue.append(self._driver.find_element_by_xpath(xpath))
+
+    def press(self, text):
+        element = self._element_queue.pop()
+        element.send_keys(text)
+
+    def fill_in(self, text):
+        element = self._element_queue.pop()
+        element.send_keys(text)
+        element.send_keys(Keys.RETURN)
+    
+    def click_button(self):
+        element = self._element_queue.pop()
+        element.click()
 
     # Interactions
     # Interactions are begun when a test starts,
