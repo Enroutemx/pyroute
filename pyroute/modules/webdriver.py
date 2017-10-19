@@ -50,8 +50,9 @@ class Webdriver(Module):
         element = self._search_element(selector)
         ActionChains.double_click(element)
 
+
     def execute_script(self, script, *args):
-        self.driver.execute_script(script, *args)
+        self.driver.execute_script(script,*args)
 
     def execute_async_script(self, script, *args):
         self.driver.execute_async_script(script, *args)

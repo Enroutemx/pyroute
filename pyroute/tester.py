@@ -2,7 +2,6 @@ import os
 import importlib
 from pyroute.config import Configuration
 
-
 class ITester(object):
 
     __module_list = []
@@ -16,8 +15,7 @@ class ITester(object):
             method = getattr(module, attr)
             if hasattr(method, "__call__"):
                 return self.__MethodWrapper(method)
-            else:
-                next
+            else: next
         return method
 
     def __load_modules(self):
@@ -47,7 +45,6 @@ class ITester(object):
                 self.func(*args, **kwargs)
             except AttributeError:
                 ITester.__module_list[self.func.__name__](*args, **kwargs)
-
 
 I = ITester()
 # class Decorators(object):

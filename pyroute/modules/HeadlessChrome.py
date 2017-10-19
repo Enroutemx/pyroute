@@ -92,9 +92,8 @@ class Headlesschrome(Module):
         """
         self._driver.get(url)
     # Assertions
-
     def confirm_title_includes(self, string):
-        return string in self._driver.title
+        return string in self._driver.title 
 
     def page_title(self):
         return self._driver.title
@@ -102,7 +101,7 @@ class Headlesschrome(Module):
     # Search and Selectors
     def select_by_class(self, class_attr):
         self._element_queue.append(self._driver.find_element_by_css_selector(class_attr))
-
+    
     def select_by_xpath(self, xpath):
         self._element_queue.append(self._driver.find_element_by_xpath(xpath))
 
@@ -114,7 +113,7 @@ class Headlesschrome(Module):
         element = self._element_queue.pop()
         element.send_keys(text)
         element.send_keys(Keys.RETURN)
-
+    
     def click_button(self):
         element = self._element_queue.pop()
         element.click()
