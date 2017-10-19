@@ -1,5 +1,5 @@
-WIP:
-h1. Setup dev environemnt
+# WIP:
+## Setup dev environemnt
 
  1. Clone this repo, we use `develop` branch for development.
  2. Install pipenv on global python from your machine `pip install pipenv`
@@ -23,10 +23,12 @@ pyroute_activate(){
 alias pyrouteenv=pyroute_activate
 ```
 
-* Create a test folder in different location than pyroute code.
+* Create a test folder in different location than pyroute code
 
 * Create a subfolder named `config`
-* Create a `config.json` file with this data
+
+* Create a `config.json` file, copy and save the following to it:
+
 ```
 {
     "tests": {
@@ -50,7 +52,9 @@ alias pyrouteenv=pyroute_activate
 
 }
 ```
-* Create a `tests` folder
-* Create a file named `sprint01_features.py`
 
-# From this folder you're going to run `pyroute run` command.
+* Create a `pyroute_tests_folder` folder
+
+* Create a file named `features.py`
+
+* From this folder you're going to run `pyroute run` command
