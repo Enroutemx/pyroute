@@ -1,16 +1,33 @@
 from pyroute.module import Module
-from selenium.webdriver import remote
+from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 class Webdriver(Module):
-    def __init__(self):
-        capabilities = Module.super()
-        self.host = capabilities['host']
-        self.page = capabilities['page']
-        self.driver = remote.webdriver.WebDriver(
-            self.host, capabilities)
+    def __init__(self, config, **kwargs):
+        
+        #Default values
+        self.defaults = {
+            "browserName": "firefox",
+            "version": "56.0",
+            "hub": "http://127.0.0.1:4444/wd/hub"
+        }
+
+        self.config_data = super().\
+            __init__(config=config, defaults=self.defaults)
+
+        self.module_config = self.config_data['defaults']
+        
+        # Removing hub from dictionary because is not
+        # supported by desired_capabilities
+        self.hub = self.module_config['hub']
+        del self.module_config['hub']
+
+        #Set driver to start de browser
+        self.driver = webdriver.Remote(command_executor = self.hub,
+                            desired_capabilities = self.module_config)
 
     def append_text(self, selector, text):
         append_text = self.get_text_from(selector) + text
