@@ -5,20 +5,24 @@ from pyroute.config import Configuration
 
 class ITester(object):
 
-    __module_list = []
-
     def __init__(self):
         self.config = Configuration("config/config.json")
+        self.__loaded_modules = {}
         self.__load_modules()
 
+    def __getitem__(self, modname):
+        return self.__loaded_modules[modname]
+
     def __getattr__(self, attr):
-        for module in ITester.__module_list:
-            method = getattr(module, attr)
-            if hasattr(method, "__call__"):
-                return self.__MethodWrapper(method)
-            else:
+        for module in self.__loaded_modules:
+            try:
+                return getattr(self.__loaded_modules[module], attr)
+            except AttributeError:
                 next
-        return method
+
+        # The logger will take care of this in the future
+        err = "No module has a method or property called '{0}'".format(attr)
+        raise AttributeError(err)
 
     def __load_modules(self):
         for module in self.config._modules:
@@ -36,17 +40,7 @@ class ITester(object):
             ###################################################
             class_ = getattr(mod_, module.capitalize())
             instance_ = class_(self.config._modules[module])
-            ITester.__module_list.append(instance_)
-
-    class __MethodWrapper(object):
-        def __init__(self, func):
-            self.func = func
-
-        def __call__(self, *args, **kwargs):
-            try:
-                self.func(*args, **kwargs)
-            except AttributeError:
-                ITester.__module_list[self.func.__name__](*args, **kwargs)
+            self.__loaded_modules[module] = instance_
 
 
 I = ITester()
