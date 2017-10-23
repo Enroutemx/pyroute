@@ -6,6 +6,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.alert import Alert
 
 
 class Webdriver(Module):
@@ -68,6 +69,9 @@ class Webdriver(Module):
         else:
             self.driver.get(self.page+path)
 
+    def cancel_popup(self):
+         Alert(self.driver).dismiss()
+    
     def check_option(self, selector):
         self._search_element(selector).click
 
