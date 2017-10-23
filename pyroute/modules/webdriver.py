@@ -3,6 +3,8 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
 
 
 class Webdriver(Module):
@@ -12,19 +14,19 @@ class Webdriver(Module):
         self.defaults = {
             
         }
-
         self.config_data = super().\
             __init__(config=config, defaults=self.defaults)
-
         self.module_config = self.config_data['defaults']
-        
         self.host = self.module_config['host']
         self.page = self.module_config['url']
         self.capabilities = self.module_config['desired_capabilities']
-
         #Set driver to start de browser
         self.driver = webdriver.Remote(command_executor = self.host,
                             desired_capabilities = self.capabilities)
+        
+    def accept_alert(self):
+        WebDriverWait(self.driver ,3).until(ec.alert_is_present(),'')
+        self.driver.switch_to.alert.accept()
 
     def append_text(self, selector, text):
         append_text = self.get_text_from(selector) + text
