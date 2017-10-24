@@ -71,6 +71,12 @@ class Webdriver(Module):
     def delete_cookie(self, name):
         self.driver.delete_cookie(name)
 
+    def dont_see(self, selector):
+        try:
+            assert not self._search_element(selector).is_displayed()
+        except NoSuchElementException:
+            assert True
+
     def double_click(self, selector):
         element = self._search_element(selector)
         ActionChains.double_click(element)
