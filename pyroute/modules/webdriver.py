@@ -9,21 +9,29 @@ from selenium.webdriver.support import expected_conditions as ec
 
 class Webdriver(Module):
     def __init__(self, config, **kwargs):
-        
+
         #Default values
         self.defaults = {
-            
+
         }
         self.config_data = super().\
             __init__(config=config, defaults=self.defaults)
         self.module_config = self.config_data['defaults']
+        self.__check_required_fields()
         self.host = self.module_config['host']
         self.page = self.module_config['url']
         self.capabilities = self.module_config['desired_capabilities']
         #Set driver to start de browser
         self.driver = webdriver.Remote(command_executor = self.host,
                             desired_capabilities = self.capabilities)
-        
+
+    def __check_required_fields(self):
+        try:
+            assert 'host' in self.module_config.keys() and \
+                                'url' in self.module_config.keys()
+        except KeyError as ke:
+            ke.args('Required keys are not stored at config.json')
+
     def accept_alert(self):
         WebDriverWait(self.driver ,3).until(ec.alert_is_present(),'')
         self.driver.switch_to.alert.accept()
