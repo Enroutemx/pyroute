@@ -5,6 +5,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.common.exceptions import NoSuchElementException
 
 
 class Webdriver(Module):
@@ -142,15 +143,24 @@ class Webdriver(Module):
 
     # returns True if element is displayed and False if not
     def see_element(self, selector):
-        return self._search_element(selector).is_displayed()
+        try:
+            assert self._search_element(selector).is_displayed()
+        except NoSuchElementException:
+            assert False
 
     # returns True if element is clickable and False if not
     def see_element_clickable(self, selector):
-        return self._search_element(selector).is_enabled()
+        try:
+            assert self._search_element(selector).is_enabled()
+        except NoSuchElementException:
+            assert False
 
     # Can be used to check if a checkbox or radio button is selected.
     def see_selected_element(self, selector):
-        return self._search_element(selector).is_selected()
+        try:
+            assert self._search_element(selector).is_selected()
+        except NoSuchElementException:
+            assert False
 
     # timeouts should receive a dictionary
     # example: {'page_load':x,'script':y}
