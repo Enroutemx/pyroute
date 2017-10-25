@@ -11,20 +11,31 @@ from selenium.common.exceptions import NoSuchElementException
 class Webdriver(Module):
     def __init__(self, config, **kwargs):
 
-        #Default values
+        # Default values
         self.defaults = {
-
+            "window_size": "maximize"
         }
+
+        # Load configuration parameters from config.json
         self.config_data = super().\
             __init__(config=config, defaults=self.defaults)
         self.module_config = self.config_data['defaults']
+
+        # Check that the required fields are present 
         self.__check_required_fields()
+
+        # Parameters to set browser configurations
         self.host = self.module_config['host']
         self.page = self.module_config['url']
+        self.window_size = self.module_config['window_size']
         self.capabilities = self.module_config['desired_capabilities']
-        #Set driver to start de browser
+
+        # Set driver to start an instance
         self.driver = webdriver.Remote(command_executor = self.host,
                             desired_capabilities = self.capabilities)
+
+        # Run private methods to set the browser configurations
+        self.__window_size()
 
     def __check_required_fields(self):
         try:
@@ -32,6 +43,15 @@ class Webdriver(Module):
                                 'url' in self.module_config.keys()
         except KeyError as ke:
             ke.args('Required keys are not stored at config.json')
+
+    def __window_size(self):
+        if self.window_size == 'maximize':
+            self.driver.maximize_window()
+        else:
+            x = self.window_size.index('x')
+            window_width = self.window_size[:x]
+            window_height = self.window_size[x+1:]
+            self.driver.set_window_size(window_width,window_height)
 
     def accept_alert(self):
         WebDriverWait(self.driver ,3).until(ec.alert_is_present(),'')
