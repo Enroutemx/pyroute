@@ -193,17 +193,17 @@ class Webdriver(Module):
     def set_window_position(self, x, y):
         self.driver.set_window_position(x, y)
 
-    def set_window_size(self, width, height):
-        self.driver.set_window_size(width, height)
-
     def submit_a_form(self, selector):
         self._search_element(selector).submit()
 
     def refresh_page(self):
         self.driver.refresh()
 
-    def resize_window(self, width, height):
-        self.driver.set_window_size(width, height)
+    def resize_window(self, window_size):
+        x = window_size.index('x')
+        window_width = window_size[:x]
+        window_height = window_size[x+1:]
+        self.driver.set_window_size(window_width,window_height)
 
     # takes a screenshot of the current page, and it will be a PNG
     # You can add a the path to where wou want to save the screen shot
