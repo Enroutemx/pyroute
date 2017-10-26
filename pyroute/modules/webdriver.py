@@ -13,7 +13,8 @@ class Webdriver(Module):
 
         # Default values
         self.defaults = {
-            "window_size": "maximize"
+            "window_size": "maximize",
+            "timeout": 10
         }
 
         # Load configuration parameters from config.json
@@ -28,18 +29,19 @@ class Webdriver(Module):
         self.host = self.module_config['host']
         self.page = self.module_config['url']
         self.window_size = self.module_config['window_size']
+        self.timeout=self.module_config['timeout']
         self.capabilities = self.module_config['desired_capabilities']
 
         # Set driver to start an instance
-        self.driver = webdriver.Remote(command_executor = self.host,
-                            desired_capabilities = self.capabilities)
+        self.driver = webdriver.Remote(command_executor=self.host,
+                            desired_capabilities=self.capabilities)
 
         # Run private methods to set the browser configurations
         self.__window_size()
 
     def __check_required_fields(self):
         try:
-            assert 'host' in self.module_config.keys() and \
+            assert 'host' in self.module_config.keys() and\
                                 'url' in self.module_config.keys()
         except KeyError as ke:
             ke.args('Required keys are not stored at config.json')
@@ -51,10 +53,11 @@ class Webdriver(Module):
             x = self.window_size.index('x')
             window_width = self.window_size[:x]
             window_height = self.window_size[x+1:]
-            self.driver.set_window_size(window_width,window_height)
+            self.driver.set_window_size(window_width, window_height)
 
     def accept_alert(self):
-        WebDriverWait(self.driver ,3).until(ec.alert_is_present(),'')
+        WebDriverWait(self.driver, self.timeout).\
+                                    until(ec.alert_is_present(), '')
         self.driver.switch_to.alert.accept()
 
     def append_text(self, selector, text):
@@ -153,13 +156,16 @@ class Webdriver(Module):
 
     def scroll_to(self, selector):
         element_position = self._search_element(selector).location
-        self.driver.execute_script("window.scrollTo(0,"+str(element_position['y'])+");")
+        self.driver.execute_script("window.scrollTo(0," +
+                                    str(element_position['y'])+");")
 
     def scroll_to_bottom(self):
-        self.driver.execute_script("window.scrollTo(0,document.body.scrollHeight);")
+        self.driver.execute_script("""window.scrollTo(0,
+                                    document.body.scrollHeight);""")
 
     def scroll_to_top(self):
-        self.driver.execute_script("window.scrollTo(0,document.body.scrollTop);")
+        self.driver.execute_script("""window.scrollTo(0,
+                                    document.body.scrollTop);""")
 
     # returns True if element is displayed and False if not
     def see_element(self, selector):
@@ -203,7 +209,7 @@ class Webdriver(Module):
         x = window_size.index('x')
         window_width = window_size[:x]
         window_height = window_size[x+1:]
-        self.driver.set_window_size(window_width,window_height)
+        self.driver.set_window_size(window_width, window_height)
 
     # takes a screenshot of the current page, and it will be a PNG
     # You can add a the path to where wou want to save the screen shot
@@ -243,7 +249,7 @@ class Webdriver(Module):
                 full_selector['css'])
         elif 'xpath' in full_selector.keys():
             element = self.driver.find_element_by_xpath(full_selector['xpath'])
-        elif'id' in full_selector.keys():
+        elif 'id' in full_selector.keys():
             element = self.driver.find_element_by_id(full_selector['id'])
         elif 'name' in full_selector.keys():
             element = self.driver.find_element_by_name(full_selector['name'])
