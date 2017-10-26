@@ -108,6 +108,21 @@ class Webdriver(Module):
         element = self._search_element(selector)
         ActionChains.double_click(element)
 
+    def drag_and_drop(self, source, target):
+        s_element = self._search_element(source)
+
+        if type(target) == str and 'x' in target and s_element:
+            x, y = target.split('x')
+            if x.isdigit() and y.isdigit():
+                ActionChains(self.driver).\
+                drag_and_drop_by_offset(s_element, int(x), int(y)).\
+                                                         perform()
+                return
+            
+        t_element = self._search_element(target)
+        ActionChains(self.driver).drag_and_drop(s_element, 
+                                      t_element).perform()
+
     def execute_script(self, script, *args):
         self.driver.execute_script(script, *args)
 
