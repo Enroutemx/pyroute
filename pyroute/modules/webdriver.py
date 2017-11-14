@@ -263,6 +263,9 @@ class Webdriver(Module):
             element = self.driver.find_element_by_id(full_selector['id'])
         elif 'name' in full_selector.keys():
             element = self.driver.find_element_by_name(full_selector['name'])
+        elif 'by_content' in full_selector.keys():
+            element = self.driver.find_element_by_xpath("""//*[contains
+                        (text(),'{0}')]""".format(full_selector['by_content']))
         else:
             print('Incorrect Selector type')
         return (element)
