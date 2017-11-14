@@ -209,6 +209,16 @@ class Webdriver(Module):
     def set_window_position(self, x, y):
         self.driver.set_window_position(x, y)
 
+    def set_window_size(self, width, height):
+        self.driver.set_window_size(width, height)
+
+    def smart_wait(self, cond, value = None, msg='', timeout, default=True):
+        tmp_wait = WebDriverWait(self.driver, timeout)
+        if default:
+            tmp_wait.until(cond, msg)
+        else:
+            tmp_wait.until_not(cond, msg)
+
     def submit_a_form(self, selector):
         self._search_element(selector).submit()
 
