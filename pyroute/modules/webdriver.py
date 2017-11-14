@@ -48,12 +48,12 @@ class Webdriver(Module):
             ke.args('Required keys are not stored at config.json')
 
     def __window_size(self):
-        if self.window_size == 'maximize':
+        if self.window_size == 'maximize' and not \
+           self.capabilities['browserName'] == 'firefox':
             self.driver.maximize_window()
-        else:
-            x = self.window_size.index('x')
-            window_width = self.window_size[:x]
-            window_height = self.window_size[x+1:]
+
+        elif not self.window_size == 'maximize':
+            window_width, window_height = self.window_size.split('x')
             self.driver.set_window_size(window_width, window_height)
 
     def accept_alert(self):
@@ -226,9 +226,7 @@ class Webdriver(Module):
         self.driver.refresh()
 
     def resize_window(self, window_size):
-        x = window_size.index('x')
-        window_width = window_size[:x]
-        window_height = window_size[x+1:]
+        window_width, window_height = window_size.split('x')
         self.driver.set_window_size(window_width, window_height)
 
     # takes a screenshot of the current page, and it will be a PNG
