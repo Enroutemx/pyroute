@@ -1,6 +1,8 @@
 [[source]]
+
 url = "https://pypi.python.org/simple"
 verify_ssl = true
+
 
 [packages]
 
@@ -10,12 +12,13 @@ pytest = "*"
 selenium = "*"
 
 
-
 [requires]
+
 python_version = "3.6"
+
 
 [dev-packages]
 
 "flake8" = "*"
 "-e ." = "*"
-"e1839a8" = {editable = true, path = "."}
+"e1839a8" = {path = ".", editable = true}

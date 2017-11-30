@@ -1,5 +1,35 @@
 ## WIP:
-## Setup dev environemnt
+## Setup Vagrant
+
+**Install Vagrant and Virtual Box**
+ 1. Install vagrant using the command `sudo apt-get install vagrant`
+ 2. Install VirtualBox using the command `sudo apt-get install virtualbox`
+ 3. Install the vagrant box `ubuntu/xenial64` using the command
+     `vagrant box add ubuntu/xenial64`
+
+**Set Up Pyroute with Vagrant**
+ 1. Clone this repo, we use `develop` branch for development.
+ 2. From the cloned repo run `vagrant up` this will setup everything (It will take some time to install everything)
+ 3. Once everything is installed run `vagrant ssh` to log into the machine
+
+**Run the first Pyroute Test**
+ 1. Open a new Terminal in you Local Machine
+ 2. Run selenium standalone in your local machine using the following command
+    `java -jar selenium-server-standalone-3.5.0.jar -role node -hub http://10.0.0.10:4444/grid/register`
+ 3. Go to the terminal where your virtual machine is logged in and type `pyrouteenv`
+ 4. Go to the directory /Test using the command `cd Test`
+ 5. Once the standalone is up and you are placed in the correct directory use:
+    `pyroute run`
+ 6. This will run your first test.
+
+ **NOTE**
+ * Selenium Standalone is running on the background
+ * To turn off Selenium Standalone run `ShutdownSelenium`
+ * If Selenium Standalone is not running or you Shut it down, just run `SeleniumOn` to turn it on again.
+
+
+
+## Setup pipenv environemnt
 
  1. Clone this repo, we use `develop` branch for development.
  2. Install pipenv on global python from your machine `pip install pipenv`

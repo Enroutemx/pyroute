@@ -227,7 +227,7 @@ class Webdriver(Module):
     def set_window_size(self, width, height):
         self.driver.set_window_size(width, height)
 
-    def smart_wait(self, cond, value = None, msg='', timeout, default=True):
+    def smart_wait(self, cond, timeout, value = None, msg='', default=True):
         tmp_wait = WebDriverWait(self.driver, timeout)
         if default:
             tmp_wait.until(cond, msg)
