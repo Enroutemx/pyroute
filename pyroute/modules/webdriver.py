@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.alert import Alert
+import time
 
 
 class Webdriver(Module):
@@ -33,11 +34,15 @@ class Webdriver(Module):
         self.timeout=self.module_config['timeout']
         self.capabilities = self.module_config['desired_capabilities']
 
-        # Set driver to start an instance
+    def __setup_driver(self, source):
         self.driver = webdriver.Remote(command_executor=self.host,
                             desired_capabilities=self.capabilities)
-
-        # Run private methods to set the browser configurations
+        if self.capabilities['browserName'] == 'chrome':
+            self.current_tab = (0, source)
+            self.tabs = [self.current_tab]
+        elif self.capabilities['browserName'] == 'firefox':
+            self.current_tab = 0
+            self.tabs = [source]
         self.__window_size()
 
     def __check_required_fields(self):
@@ -72,11 +77,17 @@ class Webdriver(Module):
         else:
             self.driver.get(self.page+path)
 
+    def attach_file(self, selector, path):
+        self.driver._is_remote = False
+        self._search_element(selector).clear()
+        self._search_element(selector).send_keys(path)
+        self.driver._is_remote = True
+
     def cancel_popup(self):
          Alert(self.driver).dismiss()
     
     def check_option(self, selector):
-        self._search_element(selector).click
+        self._search_element(selector).click()
 
     def clear_fill(self, selector):
         self._search_element(selector).clear()
@@ -86,8 +97,12 @@ class Webdriver(Module):
         self._search_element(selector).click()
 
     # close the current window
-    def close(self):
+    def close_tab(self):
         self.driver.close()
+
+    def copy_link(self, selector):
+        element = self._search_element(selector)
+        return element.get_attribute('href')
 
     def add_cookie(self, name, value):
         self.driver.add_cookie({'name': name, 'value': value})
@@ -110,18 +125,31 @@ class Webdriver(Module):
 
     def drag_and_drop(self, source, target):
         s_element = self._search_element(source)
+        if self.capabilities['browserName'] == 'chrome':
+            if type(target) == str and 'x' in target and s_element:
+                x, y = target.split('x')
+                if x.isdigit() and y.isdigit():
+                    ActionChains(self.driver).\
+                    drag_and_drop_by_offset(s_element, int(x), int(y)).\
+                                                             perform()
+                    return
 
-        if type(target) == str and 'x' in target and s_element:
-            x, y = target.split('x')
-            if x.isdigit() and y.isdigit():
-                ActionChains(self.driver).\
-                drag_and_drop_by_offset(s_element, int(x), int(y)).\
-                                                         perform()
-                return
-            
+        elif self.capabilities['browserName'] == 'firefox':
+            x, y = int(s_element.location['x']), int(s_element.location['y'])
+
+            if type(target) == str and 'x' in target and s_element:
+                x_t, y_t = target.split('x')
+                if x_t.isdigit() and y_t.isdigit():
+                    x = x + int(x_t)
+                    y = y + int(y_t)
+                    ActionChains(self.driver).\
+                    drag_and_drop_by_offset(s_element, x, y).perform()
+                    return
+
         t_element = self._search_element(target)
         ActionChains(self.driver).drag_and_drop(s_element, 
                                       t_element).perform()
+
 
     def execute_script(self, script, *args):
         self.driver.execute_script(script, *args)
@@ -132,6 +160,25 @@ class Webdriver(Module):
     # Type 'string' in the element 'x'
     def fill_field(self, selector, text):
         self._search_element(selector).send_keys(text)
+
+    def finders(self, full_selector, x):
+        if x == 0:
+            element = self.driver.find_element_by_id(full_selector)
+        elif x == 1:
+            element = self.driver.find_element_by_xpath(full_selector)
+        elif x == 2:
+            element = self.driver.find_element_by_name(full_selector)
+        elif x == 3:
+            element = self.driver.find_element_by_link_text(full_selector)
+        elif x == 4:
+            element = self.driver.find_element_by_partial_link_text(full_selector)
+        elif x == 5:
+            element = self.driver.find_element_by_css_selector(full_selector)
+        elif x == 6:
+            element = self.driver.find_element_by_tag_name(full_selector)
+        elif x == 7:
+            element = self.driver.find_element_by_class_name(full_selector)
+        return element
 
     def get_browser_logs(self):
         self.driver.get_log('browser')
@@ -177,12 +224,31 @@ class Webdriver(Module):
         self.driver.maximize_window()
 
     def open_a_webpage(self, source):
+        self.__setup_driver(source)
         self.driver.get(source)
 
+    def open_new_tab(self, source = ''):
+        self.driver.execute_script("window.open('%s');" % source)
+        if self.capabilities['browserName'] == 'chrome':
+            new_win = self.driver.window_handles[-1]
+            self.driver.switch_to_window(new_win)
+            indx = self.tabs.index(self.current_tab)
+            self.tabs.insert(indx+1, (len(self.tabs), source))
+            self.current_tab = (len(self.tabs)-1, source)
+        elif self.capabilities['browserName'] == 'firefox':
+            self.current_tab += 1
+            self.tabs.insert(self.current_tab, source)
+            new_win = self.driver.window_handles[self.current_tab]
+            self.driver.switch_to_window(new_win)
+
+    def quit(self):
+        self.current_tab = {}
+        self.tabs = []
+        self.driver.quit()
+
     def scroll_to(self, selector):
-        element_position = self._search_element(selector).location
-        self.driver.execute_script("window.scrollTo(0," +
-                                    str(element_position['y'])+");")
+        position = str(self._search_element(selector).location['y'])
+        self.driver.execute_script("window.scrollTo(0,%s);" % position)
 
     def scroll_to_bottom(self):
         self.driver.execute_script("""window.scrollTo(0,
@@ -234,6 +300,58 @@ class Webdriver(Module):
         else:
             tmp_wait.until_not(cond, msg)
 
+    def strict_locators(self, full_selector):
+        if 'css' in full_selector.keys():
+            element = self.driver.find_element_by_css_selector(full_selector['css'])
+        elif 'xpath' in full_selector.keys():
+            element = self.driver.find_element_by_xpath(full_selector['xpath'])
+        elif 'id' in full_selector.keys():
+            element = self.driver.find_element_by_id(full_selector['id'])
+        elif 'name' in full_selector.keys():
+            element = self.driver.find_element_by_name(full_selector['name'])
+        elif 'link' in full_selector.keys():
+            element = self.driver.find_element_by_link_text(full_selector['link'])
+        elif 'plink' in full_selector.keys():
+            element = self.driver.find_element_by_partial_link_text(full_selector['plink'])
+        elif 'tag' in full_selector.keys():
+            element = self.driver.find_element_by_tag_name(full_selector['tag'])
+        elif 'class' in full_selector.keys():
+            element = self.driver.find_element_by_class_name(full_selector['class'])
+        return (element)
+
+    def switch_to(self, source, item = 1):
+        if self.capabilities['browserName'] == 'chrome':
+            self.current_tab = list(filter(lambda x: source in x[1], self.tabs))[item - 1]
+            sw_win = self.driver.window_handles[self.current_tab[0]]
+            self.driver.switch_to_window(sw_win)
+        elif self.capabilities['browserName'] == 'firefox':
+            tabs_ind = enumerate(self.tabs)
+            self.current_tab = list(filter(lambda x: source in x[1], tabs_ind))[item - 1][0]
+            sw_win = self.driver.window_handles[self.current_tab]
+            self.driver.switch_to_window(sw_win)
+
+    def switch_to_next_tab(self):
+        if self.capabilities['browserName'] == 'chrome':
+            next_t = self.tabs.index(self.current_tab) + 1
+            self.current_tab = self.tabs[next_t]
+            new_win = self.driver.window_handles[self.current_tab[0]]
+            self.driver.switch_to_window(new_win)
+        elif self.capabilities['browserName'] == 'firefox':
+            self.current_tab += 1
+            new_win = self.driver.window_handles[self.current_tab]
+            self.driver.switch_to_window(new_win)
+
+    def switch_to_previous_tab(self):
+        if self.capabilities['browserName'] == 'chrome':
+            previous = self.tabs.index(self.current_tab) - 1
+            self.current_tab = self.tabs[previous]
+            new_win = self.driver.window_handles[self.current_tab[0]]
+            self.driver.switch_to_window(new_win)
+        elif self.capabilities['browserName'] == 'firefox':
+            self.current_tab -= 1
+            new_win = self.driver.window_handles[self.current_tab]
+            self.driver.switch_to_window(new_win)
+
     def submit_a_form(self, selector):
         self._search_element(selector).submit()
 
@@ -243,6 +361,9 @@ class Webdriver(Module):
     def resize_window(self, window_size):
         window_width, window_height = window_size.split('x')
         self.driver.set_window_size(window_width, window_height)
+
+    def type_enter(self, selector):
+        self._search_element(selector).send_keys(Keys.ENTER)
 
     # takes a screenshot of the current page, and it will be a PNG
     # You can add a the path to where wou want to save the screen shot
@@ -255,8 +376,8 @@ class Webdriver(Module):
         element = self._search_element(selector)
         element.screenshot(path)
 
-    def wait(self, time):
-        self.driver.implicitly_wait(time)
+    def wait(self, t):
+        time.sleep(t)
 
     def wait_for_element(self, selector, time):
         if self.see_element(selector) is not True:
@@ -277,18 +398,11 @@ class Webdriver(Module):
             self.wait_url_equals(url, time)
 
     def _search_element(self, full_selector):
-        if 'css' in full_selector.keys():
-            element = self.driver.find_element_by_css_selector(
-                full_selector['css'])
-        elif 'xpath' in full_selector.keys():
-            element = self.driver.find_element_by_xpath(full_selector['xpath'])
-        elif 'id' in full_selector.keys():
-            element = self.driver.find_element_by_id(full_selector['id'])
-        elif 'name' in full_selector.keys():
-            element = self.driver.find_element_by_name(full_selector['name'])
-        elif 'by_content' in full_selector.keys():
-            element = self.driver.find_element_by_xpath("""//*[contains
-                        (text(),'{0}')]""".format(full_selector['by_content']))
+        if type(full_selector) is dict:
+            return self.strict_locators(full_selector)
         else:
-            print('Incorrect Selector type')
-        return (element)
+            for x in range(8):
+                try:
+                    return self.finders(full_selector, x)
+                except NoSuchElementException:
+                    continue
