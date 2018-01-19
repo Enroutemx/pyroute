@@ -9,7 +9,7 @@ from pyroute.module import Module
 # from selenium.common.exceptions import HCExceptions
 
 
-class Headlesschrome(Module):
+class HeadlessChromeModule(Module):
 
     def __init__(self, config, **kwargs):
 
@@ -102,6 +102,12 @@ class Headlesschrome(Module):
     # Search and Selectors
     def select_by_class(self, class_attr):
         self._element_queue.append(self._driver.find_element_by_css_selector(class_attr))
+
+    def select_by_name(self, name_attr):
+        self._element_queue.append(self._driver.find_element_by_name(name_attr))
+
+    def select_by_id(self, id_attr):
+        self._element_queue.append(self._driver.find_element_by_id(id_attr))
 
     def select_by_xpath(self, xpath):
         self._element_queue.append(self._driver.find_element_by_xpath(xpath))

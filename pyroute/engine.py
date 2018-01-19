@@ -1,18 +1,98 @@
 import os
-import sys
-import importlib
-import traceback
 
 from pyroute.tester import ITester
 from pyroute.logger import Logger
-from pyroute.utils import PyrouteImporter
+from pyroute.utils import PyrouteImporter, Utils
 
-class TestEngine(object):
+
+class ModuleEngine(object):
+    """
+    This class implements the Module loading specifics.
+    """
+
     def __init__(self, config):
-        self.__loaded_tests = {}
         self.config = config
-        self.TElog = Logger()
-        self.I = ITester()
+        self.modules_config = config._modules
+        self.loaded_modules = {}
+        self.loaded_methods = None
+        self.module_log = Logger()
+        self.start_up()
+
+    def start_up(self):
+        loaded = self.module_log.process("Loading modules", self.load_modules)
+        self.loaded_methods = self.load_methods()
+        self.module_log.custom("[{:0>3}]".format(loaded), "Modules loaded")
+
+    def get_module_classes(self, loaded, name):
+        # Get valid Module classes, a valid module class ends with "Module"
+        mod_dict = vars(loaded)
+        name = name.upper()
+        mod_ = ((k, v) for k, v in mod_dict.items()
+                if name in k.upper() and "MODULE" in k.upper())
+        return tuple(mod_)[0]
+
+    def load_modules(self):
+        config = self.config._modules
+        path = os.path.dirname(os.path.realpath(__file__)) + "/modules/"
+        dir_contents = Utils.clean_filenames(os.listdir(path))
+        modules = set(self.config._modules).intersection(dir_contents)
+
+        for module in modules:
+            dir_path = path + module + ".py"
+            loaded_mod_ = PyrouteImporter.load(module, dir_path)
+            mod_ = self.get_module_classes(loaded_mod_, module)
+            instance_ = mod_[1](config[module])
+            self.loaded_modules[mod_[0].upper()] = instance_
+
+        loaded = len(self.loaded_modules.keys())
+        return loaded
+
+    def load_methods(self):
+        """
+        This method loads all methods from the modules, and filters out
+        the common ones (between modules)
+        """
+        modules = self.loaded_modules
+        methods = Utils.get_methods(modules)
+        ambiguous_attrs = Utils.get_shared_attrs(modules)
+        for attr in ambiguous_attrs:
+            methods.pop(attr, None)
+        return (modules, methods, ambiguous_attrs)
+
+
+class EngineInitializer(object):
+    """
+    This is the generic "starter". If there is a module that
+    implements its own engine, that will be used, otherwise
+    Pyroute's default engine will be used. This enables support
+    for alternative testing platforms and technologies, like
+    Gherkin or Python's classic unittest.
+    """
+
+    def __init__(self, config):
+        self.config = config
+        self.module_engine = ModuleEngine(config)
+
+    def start(self):
+        for module in self.module_engine.loaded_modules:
+            if hasattr(module, "_start_engine"):
+                module._start_engine()
+                return
+        PYT = PyrouteTestEngine(self.config, self.module_engine)
+        PYT._start_engine()
+
+
+class PyrouteTestEngine(object):
+    """
+    Pyroute's default engine "PYT", runs every test listed in config.
+    Check the documentation for more details about the test format.
+    """
+    def __init__(self, config, module_engine):
+        self.config = config
+        self.module_engine = module_engine
+        self.loaded_methods = self.module_engine.loaded_methods
+        self.I = ITester(*self.loaded_methods)
+        self.engine_log = Logger()
 
     def get_tests(self):
         """
@@ -26,66 +106,63 @@ class TestEngine(object):
                 test_path = "".join([test_path, ".py"])
             tests_path.append(test_path)
         return tests_path
-    
-    #@Logger.on_error("log")
+
     def load_tests(self):
         """
-        Loads tests. Self explanatory. This method uses PyrouteImporter, 
+        Loads tests. Self explanatory. This method uses PyrouteImporter,
         the same mechanism behind the module system, to load them. More
         details in 'utils.py'
         """
         paths = self.get_tests()
-        loaded = 0
+        loaded_tests = {}
         for testpath in paths:
             testfile = os.path.basename(testpath)
-            testname = str(testfile)[:-3] # Name without the '.py' extension.
-            loaded_test = PyrouteImporter.load(testfile, testpath)
-            self.__loaded_tests[testname] = loaded_test
-            loaded += 1
-        return loaded
+            testname = str(testfile)[:-3]  # Name without the '.py' extension
+            loaded = PyrouteImporter.load(testfile, testpath)
+            loaded_tests[testname] = loaded
+        return loaded_tests
 
-    #@Logger.on_error("log")
     def get_test_cases(self, test):
         """
         Comprehension to filter the test cases we are interested in.
         Before this, the test object has some properties we don't case about,
-        thus we filter them out. We also filter out those tests that don't start 
-        with the preffix specified in the configuration file.
+        thus we filter them out. We also filter out those tests that don't
+        start with the preffix specified in the configuration file.
         """
-        cases = (case_name for case_name in test.keys() 
-                if not case_name.startswith("__") and 
-                case_name.startswith(self.config._tests['preffix']))
+        cases = (case_name for case_name in dir(test)
+                 if not case_name.startswith("__") and
+                 case_name.startswith(self.config._tests['preffix']))
         return cases
 
-    #@Logger.on_error("log")
     def run_cases(self, test_name, test, cases):
         """
-        Runs cases, self explanatory. The process method is explained in 
+        Runs cases, self explanatory. The process method is explained in
         the Logger, but basically it acts as a wrapper.
         """
         for case in cases:
             message = "Running test: {0} - Case: {1}".format(test_name, case)
-            self.TElog.process(message, test[case], self.I)
+            self.engine_log.process(message, getattr(test, case), self.I)
 
-    def start(self):
+    def _start_engine(self):
         """
-        This function is called from run.py, once a TestEngine object,
-        has been initialized.
+        This function is called by the EngineInitializer.
         For now, it counts the passed tests, and runs each case, per test.
-        The Logger here does nothing, it is intended to run the background 
+        The Logger here does nothing, it is intended to run the background
         tracer to deal with errors.
         """
         passed = 0
-        Logger.start_tracing()
-        for name, test in self.__loaded_tests.items():
+        loaded_tests = self.engine_log.process("Loading tests", self.load_tests)
+        loaded = len(loaded_tests.keys())
+        self.engine_log.custom("[{:0>3}]".format(loaded), "Tests loaded")
+        for name, test in loaded_tests.items():
             cases = self.get_test_cases(test)
             self.run_cases(name, test, cases)
             message_end = "Test: {0} --- Finished".format(name)
-            self.TElog.custom("[-O-]", message_end)
+            self.engine_log.custom("[-O-]", message_end)
             passed += 1
         self.finish(passed)
-    
-    #This function runs at the end of all tests, anything done at that time goes here
+
+    # This function runs at the end of all tests, anything done at that time goes here
     def finish(self, passed_tests):
-        self.TElog.custom("[>:D]", "All tests completed")
-        self.TElog.separate("<<<< {0} Passed in {1:.3}s >>>>".format(passed_tests, Logger.elapsed_time()))
+        self.engine_log.custom("[>:D]", "All tests completed")
+        self.engine_log.separate("<<<< {0} Passed in {1:.3}s >>>>".format(passed_tests, Logger.elapsed_time()))

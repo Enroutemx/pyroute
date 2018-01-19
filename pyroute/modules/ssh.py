@@ -2,7 +2,7 @@ from paramiko import SSHClient, AutoAddPolicy
 from pyroute.module import Module
 
 
-class SSH(Module):
+class SSHModule(Module):
 
     def __init__(self, config):
         self.config_data = super().\

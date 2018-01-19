@@ -10,7 +10,7 @@ from selenium.webdriver.common.alert import Alert
 import time
 
 
-class Webdriver(Module):
+class WebDriverModule(Module):
     def __init__(self, config, **kwargs):
 
         # Default values
@@ -217,7 +217,7 @@ class Webdriver(Module):
     def go_back(self):
         self.driver.back()
 
-    def go_foward(self):
+    def go_forward(self):
         self.driver.forward()
 
     def maximize_window(self):

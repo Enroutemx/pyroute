@@ -10,7 +10,7 @@ except ImportError:
     logger.exception("You need to install `requests` library")
 
 
-class Rest(Module):
+class RestModule(Module):
 
     def __init__(self, config):
         # Default values
