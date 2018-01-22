@@ -21,21 +21,21 @@ class RestModule(Module):
             __init__(config=config, defaults=self.defaults)
         self.module_configuration = self.config_data['defaults']
 
-    def sendGetRequest(self, url, **kwargs):
+    def send_get_request(self, url, **kwargs):
         # This should only receive headers, but use kwargs in case of expansion
         return requests.get(url=self.__build_url(url), **kwargs)
 
-    def sendPostRequest(self, url, **kwargs):
+    def send_post_request(self, url, **kwargs):
         # Should receive payload and headers as named parameter
         return requests.post(url=self.__build_url(url), **kwargs)
 
-    def sendPatchRequest(self, url, **kwargs):
+    def send_patch_request(self, url, **kwargs):
         return requests.patch(url=self.__build_url(url), **kwargs)
 
-    def sendPutRequest(self, url, **kwargs):
+    def send_put_request(self, url, **kwargs):
         return requests.put(url=self.__build_url(url), **kwargs)
 
-    def sendDeleteRequest(self, url, **kwargs):
+    def send_delete_request(self, url, **kwargs):
         return requests.delete(url=self.__build_url(url), **kwargs)
 
     def __build_url(self, url):
