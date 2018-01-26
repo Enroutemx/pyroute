@@ -96,15 +96,26 @@ class PyrouteTestEngine(object):
 
     def get_tests(self):
         """
-        Test finder, for now it just allows the user to specify tests
-        with and without a '.py' extension.
+        Test finder allows the user to specify tests with
+        and without a '.py' and also allows the user to
+        specify a directory path with and without "/" if
+        there's a file and a folder with the same name,
+        the file and the folder and its files will be
+        loaded.
         """
         tests_path = []
         for test in self.config._tests['path']:
-            test_path = os.getcwd() + "/" + test
-            if not test_path.endswith(".py"):
-                test_path = "".join([test_path, ".py"])
-            tests_path.append(test_path)
+            test_path = '{}/{}'.format(os.getcwd(),test)
+            py_file = '{}.py'.format(test_path)
+            if os.path.isdir(test_path):
+                folder = os.listdir(test_path)
+                files =[os.path.join(test_path, file) for\
+                file in folder if file.endswith(".py")]
+                [tests_path.append(file) for file in files]
+            if os.path.isfile(py_file):
+                tests_path.append(py_file)
+            else:
+                tests_path.append(test_path)
         return tests_path
 
     def load_tests(self):
