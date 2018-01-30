@@ -18,7 +18,7 @@ class ITester(object):
         Use this for debugging.
             `- message`: The text to be displayed.
         """
-        self.__log.custom("[-I-]", message)
+        self.__log.custom("[-I-]", str(message))
 
     def sleep(self):
         pass
@@ -38,9 +38,7 @@ class ITester(object):
             object.__setattr__(self, attr, value)
         else:
             # The logger will take care of this in the future
-            err = "Cannot assign to '{0}'.\
-                    Only use a module methods to\
-                    interface with it.".format(attr)
+            err = "Cannot assign to '{0}'. Only use a module methods to interface with it.".format(attr)
             raise AssignmentError(err)
 
     def __getattr__(self, attr):
@@ -51,11 +49,8 @@ class ITester(object):
         if attr in self.__loaded_methods:
             return getattr(self.__loaded_methods[attr], attr)
         if attr in self.__ambiguity_set:
-            err = "Two or more modules share the same method.\
-                    Use the dictionary syntax to specify a module.\
-                    Ex: I[module_name].{0}".format(attr)
+            err = "Two or more modules share the same method. Use the dictionary syntax to specify a module. Ex: I[module_name].{0}".format(attr)
             raise AmbiguousMethodCallError(err)
         else:
-            err = "No module has a \
-                    method or property called '{0}'".format(attr)
-            raise AttributeError(err)
+            err = "No module has a  method or property called '{0}'".format(attr)
+            raise MethodNotFoundError(err)

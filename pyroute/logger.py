@@ -1,10 +1,12 @@
 import sys
 import time
 import os
-import traceback
+import inspect
+import linecache
 
 from itertools import cycle
 from pyroute.utils import Threaded
+from pyroute.utils import Utils
 from pyroute.errors import *
 
 class Logger(object):
@@ -42,28 +44,23 @@ class Logger(object):
         Logger.time_counter.stop()
         return Logger.time_counter.elapsed_time()
     
-    # Decorator to output something because of an errer, this does not work as intended yet. 
-    # A debbugger or similar is missing.
+    # Decorator to output and optionally do something because of an error. 
     @classmethod
-    def on_error(cls, action, message):
+    def on_error(cls, message=None, action=None):
         def processed_func(fn):
             def wrapper(*args, **kwargs):
-                if action is "log":
-                    Logger.__handle_exc(message, fn, *args, **kwargs)
+                if message is not None:
+                    Logger.error(message)
+                    error_shown = True
+                if action is not None:
+                    action()
+                if error_shown is True:
+                    # Clean up
+                    return
+                raise
             return wrapper
         return processed_func
     
-    # Exception formatter, used by the above decorator.
-    @classmethod
-    def __handle_exc(message, fn, *args, **kwargs):
-        try:
-            fn(*args, **kwargs)
-        except MethodNotFoundError:
-            Logger.failure(message)
-        # List custom exceptions here
-        except:
-            pass
-
     # Decorator to display an animation while a function is running
     # Two IO methods, process_start and process_end, are the delimiters
     # of each process, taking care of the wrapped function clean-up, and
@@ -114,22 +111,41 @@ class Logger(object):
         IO.new_line()
         IO.new_line()
 
+    # Display a warning
+    @classmethod
+    def warning(cls, warning_message):
+        IO.use_symbol("[-!-]")
+        IO.static_print(warning_message)
+        IO.new_line()
+        
     # Display an error
-    def error(self, error_message):
+    @classmethod
+    def error(cls, error_message):
         IO.use_symbol("[ ✘ ]")
         IO.static_print(error_message)
         IO.new_line()
 
     # Display a failure
     @classmethod
-    def failure(cls, error):
+    def failure(cls, failure_message):
         IO.use_symbol("[!!!]")
-        IO.static_print(error.message)
-        IO.last_command_print()
-        IO.simple_print(error.location + " ->> ")
-        IO.simple_print(error.command)
+        IO.static_print(failure_message)
         IO.new_line()
 
+    @classmethod
+    def show_error_location(cls, line, filename, line_span=5):
+        min_line = line - line_span if line > line_span else 1
+        max_line = line + line_span + 1
+        source = []
+        for l in range(min_line, max_line):
+            source_line = linecache.getline(filename, l)
+            if source_line == "": continue
+            if l == line:
+                source.append("{0}  >>>\t{1}".format(l, source_line))
+            else:
+                source.append("{0}\t{1}".format(l, source_line))
+        IO.show_code(source)
+             
 class IO(object):
 
     _process_complete = False
@@ -207,15 +223,44 @@ class IO(object):
         sys.stdout.write(text)
         sys.stdout.flush()
 
+    @classmethod
+    def show_code(cls, list_of_str):
+        length = len(max(list_of_str, key=len)) * 2 - 1
+        IO.last_command_print()
+        for line in list_of_str:
+            IO.move_cursor_to_c(6)
+            sys.stdout.write('│')
+            IO.move_cursor_forward(1)
+            sys.stdout.write(line)
+        IO.move_cursor_to_c(6)
+        sys.stdout.write('└' + '─' * length + '\n')
+        sys.stdout.flush()
+        
+    
     # Prints the last command executed, for debugging.
     @classmethod
     def last_command_print(cls):
-        sys.stdout.write('\n')
-        sys.stdout.write("\x1b[4G")
-        sys.stdout.write("└─┬─┘         \n")
-        sys.stdout.write("\x1b[3C")
-        sys.stdout.write("  └────────>  ")
+        IO.move_cursor_to_c(4)
+        sys.stdout.write("──┬──\n")
+        IO.move_cursor_to_c(4)
+        sys.stdout.write("  │  \n")
         sys.stdout.flush()
+
+    @classmethod
+    def move_cursor_to_c(cls, n):
+        sys.stdout.write("\x1b[{}G".format(n))
+
+    @classmethod
+    def move_cursor_forward(cls, n):
+        sys.stdout.write("\x1b[{}C".format(n))
+        
+    @classmethod
+    def move_cursor_backward(cls, n):
+        sys.stdout.write("\x1b[{}D".format(n))
+        
+    @classmethod
+    def reset_cursor(cls):
+        sys.stdout.write("\x1b[u")
 
 class Timer(object):
     def __init__(self):
@@ -229,3 +274,28 @@ class Timer(object):
 
     def elapsed_time(self):
         return Timer.endtime - Timer.starttime
+
+def _handle_exc(exc_type, exc_value, exc_traceb):
+    """
+    Overrides Python's error handling for Pyroute Exceptions, and only Pyroute 
+    Exceptions (including Modules)
+    """
+    exc_message = str(exc_value) if str(exc_value) != "" else str(exc_type.__name__)
+    exc_traceinfo = inspect.getinnerframes(exc_traceb)[-2]
+    if issubclass(exc_type, KeyboardInterrupt):
+        Logger.warning("Aborted!")
+        return
+    if issubclass(exc_type, PyrouteException):
+        Logger.error(exc_message)
+        Logger.show_error_location(exc_traceinfo.lineno, exc_traceinfo.filename)
+        return
+    if issubclass(exc_type, Exception):
+        Logger.failure(exc_message)
+        #IO.draw_separator(label=" Python's Traceback ")
+        IO.new_line()
+        #sys.__excepthook__(exc_type, exc_value, exc_traceb)
+        #IO.draw_separator()
+        #IO.new_line()
+        return
+
+sys.excepthook = _handle_exc

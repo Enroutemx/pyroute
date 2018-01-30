@@ -1,16 +1,28 @@
 # Pyroute Exceptions
-# This will be used to interact with the logger later.
-class AmbiguousMethodCallError(Exception):
+
+class PyrouteException(Exception):
     pass
 
-class MethodNotFoundError(Exception):
+class EngineError(PyrouteException):
     pass
 
-class AssignmentError(Exception):
+class ModuleError(PyrouteException):
     pass
 
-class TestError(Exception):
+class AmbiguousMethodCallError(PyrouteException):
     pass
 
-class CaseError(Exception):
+class MethodNotFoundError(PyrouteException):
+    pass
+
+class AssignmentError(PyrouteException):
+    pass
+
+class PyrouteAssertionError(PyrouteException):
+    pass
+
+class TestError(PyrouteException):
+    pass
+
+class CaseError(PyrouteException):
     pass
