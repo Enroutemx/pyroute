@@ -18,7 +18,7 @@ class ITester(object):
         Use this for debugging.
             `- message`: The text to be displayed.
         """
-        self.__log.custom("[-I-]", str(message))
+        self.__log.custom("[-I-]", str(message), self.__config._colors["custom"])
 
     def sleep(self):
         pass

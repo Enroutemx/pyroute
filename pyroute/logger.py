@@ -8,6 +8,7 @@ from itertools import cycle
 from pyroute.utils import Threaded
 from pyroute.utils import Utils
 from pyroute.errors import *
+from pyroute.config import Configuration
 
 class Logger(object):
 
@@ -78,49 +79,60 @@ class Logger(object):
         return proccessed_fn
                 
     # Non-decorator version of the above
-    def process(self, message, processed_func, *args, **kwargs):
+    def process(self, color, message, processed_func, *args, **kwargs):
+        IO.set_color(color)
         IO.process_start()
         IO.use_symbol("[ \\ ],[ | ],[ / ],[ — ]")
         IO.fancy_print(message)
         processed = processed_func(*args, **kwargs)
         IO.process_end()
         return processed
+        IO.set_color("RESET")
 
     # Display a message with a custom symbol and optional timeout
-    def custom(self, symbol, message, timeout=None):
+    def custom(self, symbol, message, color, timeout=None):
+        IO.set_color(color)
         IO.use_symbol(symbol)
         IO.static_print(message)
+        IO.set_color("RESET")
         if timeout is not None:
             IO.wait(timeout)
         IO.new_line()
 
     # Animated version of the above, takes a comma-separated string
     # of symbols, the message and optionally the timeout and fps
-    def custom_animated(self, symbols, message, timeout=None, speed=10):
+    def custom_animated(self, symbols, message, color, timeout=None, speed=10):
+        IO.set_color(color)
         IO.process_start()
         IO.use_symbol(symbols)
         IO.fancy_print(message, speed)
         if timeout is not None:
             IO.wait(timeout)
         IO.process_end()
+        IO.set_color("RESET")
 
     # Just a separator with an optional label
-    def separate(self, label=None, sep='-'):
+    def separate(self, color, label=None, sep='-'):
+        IO.set_color(color)
         IO.new_line()
         IO.draw_separator(label, sep)
         IO.new_line()
         IO.new_line()
+        IO.set_color("RESET")
 
     # Display a warning
     @classmethod
     def warning(cls, warning_message):
+        IO.set_color(IO.config._colors["warning"])
         IO.use_symbol("[-!-]")
         IO.static_print(warning_message)
         IO.new_line()
+        IO.set_color("RESET")
         
     # Display an error
     @classmethod
     def error(cls, error_message):
+        IO.set_color(IO.config._colors["error"])
         IO.use_symbol("[ ✘ ]")
         IO.static_print(error_message)
         IO.new_line()
@@ -128,9 +140,11 @@ class Logger(object):
     # Display a failure
     @classmethod
     def failure(cls, failure_message):
+        IO.set_color(IO.config._colors["failure"])
         IO.use_symbol("[!!!]")
         IO.static_print(failure_message)
         IO.new_line()
+        IO.set_color("RESET")
 
     @classmethod
     def show_error_location(cls, line, filename, line_span=5):
@@ -147,11 +161,53 @@ class Logger(object):
         IO.show_code(source)
              
 class IO(object):
-
+    
+    # Dictionary with the ansi codes for terminal color
+    # "BRG" stands for bright color
+    # "BG" stands for background color
+    color = {
+        "BLACK": '\u001b[30m',
+        "RED": '\u001b[31m',
+        "GREEN": '\u001b[32m',
+        "ORANGE": '\u001b[33m',
+        "BLUE": '\u001b[34m',
+        "MAGENTA": '\u001b[35m',
+        "CYAN": '\u001b[36m',
+        "GREY": '\u001b[37m',
+        "BRG_BLACK": '\u001b[30;1m',
+        "BRG_RED": '\u001b[31;1m',
+        "BRG_GREEN": '\u001b[32;1m',
+        "BRG_YELLOW": '\u001b[33;1m',
+        "BRG_BLUE": '\u001b[34;1m',
+        "BRG_MAGENTA": '\u001b[35;1m',
+        "BRG_CYAN": '\u001b[36;1m',
+        "BRG_WHITE": '\u001b[37;1m',
+        "BG_BLACK": '\u001b[40m',
+        "BG_RED": '\u001b[41m',
+        "BG_GREEN": '\u001b[42m',
+        "BG_YELLOW": '\u001b[43m',
+        "BG_BLUE": '\u001b[44m',
+        "BG_MAGENTA": '\u001b[45m',
+        "BG_CYAN": '\u001b[46m',
+        "BG_WHITE": '\u001b[47m',
+        "BG_BRG_BLACK": '\u001b[40;1m',
+        "BG_BRG_RED": '\u001b[41;1m',
+        "BG_BRG_GREEN": '\u001b[42;1m',
+        "BG_BRG_YELLOW": '\u001b[43;1m',
+        "BG_BRG_BLUE": '\u001b[44;1m',
+        "BG_BRG_MAGENTA": '\u001b[45;1m',
+        "BG_BRG_CYAN": '\u001b[46;1m',
+        "BG_BRG_GREY": '\u001b[47;1m',
+        "BOLD": '\u001b[1m',
+        "UNDERLINE": '\u001b[4m',
+        "RESET": '\u001b[0m',
+    }
     _process_complete = False
     _threads = []
     symbol = []
     symbol_completed = ["[ ✔ ]"]
+    config = Configuration("config/config.json")
+    color_config = config._colors["color"].upper()
     @classmethod
     def process_start(cls):
         IO._process_complete = False
@@ -261,6 +317,13 @@ class IO(object):
     @classmethod
     def reset_cursor(cls):
         sys.stdout.write("\x1b[u")
+
+    @classmethod
+    def set_color(cls, color):
+        if cls.color_config == "ON":
+            sys.stdout.write(IO.color[color.upper()])
+        else:
+            pass
 
 class Timer(object):
     def __init__(self):

@@ -11,6 +11,7 @@ class Configuration(object):
         config = self.load_configs(config_path)
         self._tests = config['tests']
         self._modules = config['modules']
+        self._colors = config['colors']
 
     def load_configs(self, config_path):
         """

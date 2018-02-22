@@ -19,9 +19,9 @@ class ModuleEngine(object):
         self.start_up()
 
     def start_up(self):
-        loaded = self.module_log.process("Loading modules", self.load_modules)
+        loaded = self.module_log.process(self.config._colors['loading_modules'], "Loading modules", self.load_modules)
         self.loaded_methods = self.load_methods()
-        self.module_log.custom("[{:0>3}]".format(loaded), "Modules loaded")
+        self.module_log.custom("[{:0>3}]".format(loaded), "Modules loaded", self.config._colors['modules_loaded'])
 
     def get_module_classes(self, loaded, name):
         # Get valid Module classes, a valid module class ends with "Module"
@@ -152,7 +152,7 @@ class PyrouteTestEngine(object):
         """
         for case in cases:
             message = "Running test: {0} - Case: {1}".format(test_name, case)
-            self.engine_log.process(message, getattr(test, case), self.I)
+            self.engine_log.process(self.config._colors['running_test'], message, getattr(test, case), self.I)
 
     def _start_engine(self):
         """
@@ -162,18 +162,18 @@ class PyrouteTestEngine(object):
         tracer to deal with errors.
         """
         passed = 0
-        loaded_tests = self.engine_log.process("Loading tests", self.load_tests)
+        loaded_tests = self.engine_log.process(self.config._colors['loading_tests'], "Loading tests", self.load_tests)
         loaded = len(loaded_tests.keys())
-        self.engine_log.custom("[{:0>3}]".format(loaded), "Tests loaded")
+        self.engine_log.custom("[{:0>3}]".format(loaded), "Tests loaded", self.config._colors['tests_loaded'])
         for name, test in loaded_tests.items():
             cases = self.get_test_cases(test)
             self.run_cases(name, test, cases)
             message_end = "Test: {0} --- Finished".format(name)
-            self.engine_log.custom("[-O-]", message_end)
+            self.engine_log.custom("[-O-]", message_end, self.config._colors['finished_test'])
             passed += 1
         self.finish(passed)
 
     # This function runs at the end of all tests, anything done at that time goes here
     def finish(self, passed_tests):
-        self.engine_log.custom("[>:D]", "All tests completed")
-        self.engine_log.separate("<<<< {0} Passed in {1:.3}s >>>>".format(passed_tests, Logger.elapsed_time()))
+        self.engine_log.custom("[>:D]", "All tests completed", self.config._colors['tests_completed'])
+        self.engine_log.separate(self.config._colors['passed_time'], "<<<< {0} Passed in {1:.3}s >>>>".format(passed_tests, Logger.elapsed_time()))
