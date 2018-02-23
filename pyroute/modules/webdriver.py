@@ -96,7 +96,7 @@ class WebDriverModule(Module):
     def click(self, selector):
         self._search_element(selector).click()
 
-    # close the current window
+    # close the current tab
     def close_tab(self):
         self.driver.close()
 
@@ -157,28 +157,9 @@ class WebDriverModule(Module):
     def execute_async_script(self, script, *args):
         self.driver.execute_async_script(script, *args)
 
-    # Type 'string' in the element 'x'
+    # Type 'text' in the element 'selector'
     def fill_field(self, selector, text):
         self._search_element(selector).send_keys(text)
-
-    def finders(self, full_selector, x):
-        if x == 0:
-            element = self.driver.find_element_by_id(full_selector)
-        elif x == 1:
-            element = self.driver.find_element_by_xpath(full_selector)
-        elif x == 2:
-            element = self.driver.find_element_by_name(full_selector)
-        elif x == 3:
-            element = self.driver.find_element_by_link_text(full_selector)
-        elif x == 4:
-            element = self.driver.find_element_by_partial_link_text(full_selector)
-        elif x == 5:
-            element = self.driver.find_element_by_css_selector(full_selector)
-        elif x == 6:
-            element = self.driver.find_element_by_tag_name(full_selector)
-        elif x == 7:
-            element = self.driver.find_element_by_class_name(full_selector)
-        return element
 
     def get_browser_logs(self):
         self.driver.get_log('browser')
@@ -203,8 +184,6 @@ class WebDriverModule(Module):
         element = self._search_element(selector)
         return element.get_property(name)
 
-    # Is needed a dict to return the text of the given element
-    # {'type of selector':'selector'}
     def get_text_from(self, selector):
         return self._search_element(selector).text
 
@@ -241,6 +220,7 @@ class WebDriverModule(Module):
             new_win = self.driver.window_handles[self.current_tab]
             self.driver.switch_to_window(new_win)
 
+    # Close the current webdriver instance
     def quit(self):
         self.current_tab = {}
         self.tabs = []
@@ -258,21 +238,21 @@ class WebDriverModule(Module):
         self.driver.execute_script("""window.scrollTo(0,
                                     document.body.scrollTop);""")
 
-    # returns True if element is displayed and False if not
+    # Reviews if an element is visible or not
     def see_element(self, selector):
         try:
             assert self._search_element(selector).is_displayed()
         except NoSuchElementException:
             assert False
 
-    # returns True if element is clickable and False if not
+    # Reviews if an element is clickable
     def see_element_clickable(self, selector):
         try:
             assert self._search_element(selector).is_enabled()
         except NoSuchElementException:
             assert False
 
-    # Can be used to check if a checkbox or radio button is selected.
+    # Reviews if an element is checked or selected
     def see_selected_element(self, selector):
         try:
             assert self._search_element(selector).is_selected()
@@ -299,25 +279,6 @@ class WebDriverModule(Module):
             tmp_wait.until(cond, msg)
         else:
             tmp_wait.until_not(cond, msg)
-
-    def strict_locators(self, full_selector):
-        if 'css' in full_selector.keys():
-            element = self.driver.find_element_by_css_selector(full_selector['css'])
-        elif 'xpath' in full_selector.keys():
-            element = self.driver.find_element_by_xpath(full_selector['xpath'])
-        elif 'id' in full_selector.keys():
-            element = self.driver.find_element_by_id(full_selector['id'])
-        elif 'name' in full_selector.keys():
-            element = self.driver.find_element_by_name(full_selector['name'])
-        elif 'link' in full_selector.keys():
-            element = self.driver.find_element_by_link_text(full_selector['link'])
-        elif 'plink' in full_selector.keys():
-            element = self.driver.find_element_by_partial_link_text(full_selector['plink'])
-        elif 'tag' in full_selector.keys():
-            element = self.driver.find_element_by_tag_name(full_selector['tag'])
-        elif 'class' in full_selector.keys():
-            element = self.driver.find_element_by_class_name(full_selector['class'])
-        return (element)
 
     def switch_to(self, source, item = 1):
         if self.capabilities['browserName'] == 'chrome':
@@ -398,11 +359,30 @@ class WebDriverModule(Module):
             self.wait_url_equals(url, time)
 
     def _search_element(self, full_selector):
+        key_selector = ""
+        value_selector = ""
+        dispatcher = {
+            'css': self.driver.find_element_by_css_selector,
+            'xpath': self.driver.find_element_by_xpath,
+            'id': self.driver.find_element_by_id,
+            'name': self.driver.find_element_by_name,
+            'link': self.driver.find_element_by_link_text,
+            'plink': self.driver.find_element_by_partial_link_text,
+            'tag': self.driver.find_element_by_tag_name,
+            'class': self.driver.find_element_by_class_name
+        }
         if type(full_selector) is dict:
-            return self.strict_locators(full_selector)
-        else:
-            for x in range(8):
+            key_selector = list(full_selector.keys())[0]
+            value_selector = list(full_selector.values())[0]
+            if key_selector in dispatcher.keys():
                 try:
-                    return self.finders(full_selector, x)
+                    return dispatcher[key_selector](value_selector)
+                except NoSuchElementException:
+                    return None
+        else:
+            for selector in dispatcher.keys():
+                try:
+                    return dispatcher[selector](full_selector)
                 except NoSuchElementException:
                     continue
+        return None
