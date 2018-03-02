@@ -5,12 +5,12 @@ from pyroute.errors import *
 
 class ITester(object):
 
-    def __init__(self, modules, methods, ambiguity_set):
-        self.__config = Configuration("config/config.json")
+    def __init__(self, modules, methods, ambiguity_set, config):
+        self.__config = config
         self.__loaded_modules = modules
         self.__loaded_methods = methods
         self.__ambiguity_set = ambiguity_set
-        self.__log = Logger()
+        self.__log = Logger(self.__config)
 
     def say(self, message):
         """

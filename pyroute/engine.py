@@ -15,7 +15,7 @@ class ModuleEngine(object):
         self.modules_config = config._modules
         self.loaded_modules = {}
         self.loaded_methods = None
-        self.module_log = Logger()
+        self.module_log = Logger(self.config)
         self.start_up()
 
     def start_up(self):
@@ -57,7 +57,7 @@ class ModuleEngine(object):
         ambiguous_attrs = Utils.get_shared_attrs(modules)
         for attr in ambiguous_attrs:
             methods.pop(attr, None)
-        return (modules, methods, ambiguous_attrs)
+        return (modules, methods, ambiguous_attrs, self.config)
 
 
 class EngineInitializer(object):
@@ -92,7 +92,7 @@ class PyrouteTestEngine(object):
         self.module_engine = module_engine
         self.loaded_methods = self.module_engine.loaded_methods
         self.I = ITester(*self.loaded_methods)
-        self.engine_log = Logger()
+        self.engine_log = Logger(self.config)
 
     def get_tests(self):
         """

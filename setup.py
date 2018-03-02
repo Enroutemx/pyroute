@@ -4,7 +4,7 @@ setup(
     name='pyroute',
     version='0.1',
     py_modules=['pyroute'],
-    install_requires=['Click', 'requests', "pytest", "selenium"],
+    install_requires=['Click', 'requests', "pytest", "selenium", "pyyaml", "toml"],
     entry_points='''
     [console_scripts]
     pyroute=pyroute.cli:runnable

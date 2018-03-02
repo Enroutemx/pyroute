@@ -15,7 +15,7 @@ class Run(object):
     def __init__(self, config=None):
         self.config = Configuration(config)
         self.module_list = []
-        self.run_log = Logger()
+        self.run_log = Logger(self.config)
 
     def execute_tests(self):
         Logger.count_time()
