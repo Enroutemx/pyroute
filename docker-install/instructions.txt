@@ -1,0 +1,10 @@
+#######################################################################################################
+
+			PYROUTE FRAMEWORK DOCKER INSTALLATION
+
+#######################################################################################################
+
+1. Execute "pyroute-docker-install.sh" and wait until the script finish its processes
+   The program should get you inside hte already to work docker container
+2. Once in the container, execute the "pyroute-startup.sh" file for setting up
+   the Pyroute framework.
