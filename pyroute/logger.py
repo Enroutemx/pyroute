@@ -8,14 +8,15 @@ from itertools import cycle
 from pyroute.utils import Threaded
 from pyroute.utils import Utils
 from pyroute.errors import *
-from pyroute.config import Configuration
 
 class Logger(object):
 
     _threads = []
 
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
         self.start()
+        IO.start(self.config)
 
     def start(self):
         pass
@@ -123,7 +124,7 @@ class Logger(object):
     # Display a warning
     @classmethod
     def warning(cls, warning_message):
-        IO.set_color(IO.config._colors["warning"])
+        IO.set_style_color("warning")
         IO.use_symbol("[-!-]")
         IO.static_print(warning_message)
         IO.new_line()
@@ -132,7 +133,7 @@ class Logger(object):
     # Display an error
     @classmethod
     def error(cls, error_message):
-        IO.set_color(IO.config._colors["error"])
+        IO.set_style_color("error")
         IO.use_symbol("[ ✘ ]")
         IO.static_print(error_message)
         IO.new_line()
@@ -140,7 +141,7 @@ class Logger(object):
     # Display a failure
     @classmethod
     def failure(cls, failure_message):
-        IO.set_color(IO.config._colors["failure"])
+        IO.set_style_color("failure")
         IO.use_symbol("[!!!]")
         IO.static_print(failure_message)
         IO.new_line()
@@ -206,8 +207,14 @@ class IO(object):
     _threads = []
     symbol = []
     symbol_completed = ["[ ✔ ]"]
-    config = Configuration("config/config.json")
-    color_config = config._colors["color"].upper()
+    color_config = ""
+    style = []
+
+    @classmethod
+    def start(cls, config):
+        cls.color_config = config._colors["color"].upper()
+        cls.style = config._colors
+
     @classmethod
     def process_start(cls):
         IO._process_complete = False
@@ -322,6 +329,13 @@ class IO(object):
     def set_color(cls, color):
         if cls.color_config == "ON":
             sys.stdout.write(IO.color[color.upper()])
+        else:
+            pass
+
+    @classmethod
+    def set_style_color(cls, style):
+        if cls.color_config == "ON":
+            sys.stdout.write(IO.color[IO.style[style].upper()])
         else:
             pass
 

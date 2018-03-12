@@ -18,6 +18,8 @@ Below is shown how to use a specific json file.
 """
 
 import json
+import yaml
+import toml
 import logging
 
 logging.basicConfig(level=logging.ERROR)
@@ -52,6 +54,12 @@ class Configuration(object):
         logger.debug('config_path=%s', config_path)
         try:
             with open(config_path) as data_file:
-                return json.load(data_file)
+                if config_path.endswith("json"):
+                    return json.load(data_file)
+                elif config_path.endswith("yaml") or\
+                config_path.endswith("yml"):
+                    return yaml.load(data_file)
+                elif config_path.endswith("toml"):
+                    return toml.load(data_file)
         except IOError:
             logger.exception("File doesn't exist in %s", config_path)
