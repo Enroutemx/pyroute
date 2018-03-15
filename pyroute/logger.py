@@ -9,6 +9,33 @@ from pyroute.utils import Threaded
 from pyroute.utils import Utils
 from pyroute.errors import *
 
+class Verbosity(object):
+    """
+    Decorator used to define the verbosity of the
+    methods in the logger. The decorator takes an 
+    argument message and an argument verbosity, which
+    tells the level of verbosity in which it falls.
+    A variable "verbosity_config", takes its value from
+    the json file, and tells the level of verbosity
+    that the Logger will output.
+    """
+    def __init__(self, message, verbosity):
+        config = Configuration("config/config.json")
+        self.message = message
+        self.verbosity = verbosity
+        self.verbosity_config = config._tests["verbosity"].upper()
+
+    def __call__(self, fn):
+        def wrapper(*args, **kwargs):
+            if self.verbosity == "LOW":
+                fn(*args, **kwargs)
+            if self.verbosity == "MEDIUM" and (self.verbosity_config == "MEDIUM" or
+               self.verbosity_config == "HIGH"):
+                fn(*args, **kwargs)
+            if self.verbosity == "HIGH" and self.verbosity_config == "HIGH":
+                fn(*args, **kwargs)
+        return wrapper
+
 class Logger(object):
 
     _threads = []
