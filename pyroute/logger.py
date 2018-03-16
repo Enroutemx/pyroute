@@ -187,6 +187,30 @@ class Logger(object):
             else:
                 source.append("{0}\t{1}".format(l, source_line))
         IO.show_code(source)
+
+	@classmethod	
+	def feature(cls, message):
+		def proccessed_fn(fn):
+			def wrapper(*args, **kwargs):
+				IO.process_start()
+                IO.use_symbol("[Feature: " + cls.__class__.__name__ "]")
+                IO.static_print(message)
+                fn(*args, **kwargs)
+                IO.process_end()
+			return wrapper
+		return proccessed_fn
+
+    @classmethod	
+    def scenario(cls, message):
+        def proccessed_fn(fn):
+            def wrapper(*args, **kwargs):
+                IO.process_start()
+                IO.use_symbol("[Scenario: " + cls.__class__.__name__ "]")
+                IO.static_print(message)
+                fn(*args, **kwargs)
+                IO.process_end()
+            return wrapper
+        return proccessed_fn
              
 class IO(object):
     
@@ -403,3 +427,4 @@ def _handle_exc(exc_type, exc_value, exc_traceb):
         return
 
 sys.excepthook = _handle_exc
+
