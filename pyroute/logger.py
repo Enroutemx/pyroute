@@ -12,7 +12,7 @@ from pyroute.errors import *
 class Verbosity(object):
     """
     Decorator used to define the verbosity of the
-    methods in the logger. The decorator takes an 
+    methods in the logger. The decorator takes an
     argument message and an argument verbosity, which
     tells the level of verbosity in which it falls.
     A variable "verbosity_config", takes its value from
@@ -63,17 +63,17 @@ class Logger(object):
     @classmethod
     @Threaded(_threads)
     def count_time(cls):
-        #Start a threaded timer
+        # Start a threaded timer
         Logger.time_counter = Timer()
         Logger.time_counter.start()
-    
+
     @classmethod
     def elapsed_time(cls):
         # Return the elapsed time and stops the timer.
         Logger.time_counter.stop()
         return Logger.time_counter.elapsed_time()
-    
-    # Decorator to output and optionally do something because of an error. 
+
+        # Decorator to output and optionally do something because of an error.
     @classmethod
     def on_error(cls, message=None, action=None):
         def processed_func(fn):
@@ -89,7 +89,7 @@ class Logger(object):
                 raise
             return wrapper
         return processed_func
-    
+
     # Decorator to display an animation while a function is running
     # Two IO methods, process_start and process_end, are the delimiters
     # of each process, taking care of the wrapped function clean-up, and
@@ -105,7 +105,7 @@ class Logger(object):
                 IO.process_end()
             return wrapper
         return proccessed_fn
-                
+
     # Non-decorator version of the above
     def process(self, color, message, processed_func, *args, **kwargs):
         IO.set_color(color)
@@ -156,7 +156,7 @@ class Logger(object):
         IO.static_print(warning_message)
         IO.new_line()
         IO.set_color("RESET")
-        
+
     # Display an error
     @classmethod
     def error(cls, error_message):
@@ -181,14 +181,15 @@ class Logger(object):
         source = []
         for l in range(min_line, max_line):
             source_line = linecache.getline(filename, l)
-            if source_line == "": continue
+            if source_line == "":
+                continue
             if l == line:
                 source.append("{0}  >>>\t{1}".format(l, source_line))
             else:
                 source.append("{0}\t{1}".format(l, source_line))
         IO.show_code(source)
 
-	@classmethod	
+	@classmethod
 	def feature(cls, message):
 		def proccessed_fn(fn):
 			def wrapper(*args, **kwargs):
@@ -200,7 +201,7 @@ class Logger(object):
 			return wrapper
 		return proccessed_fn
 
-    @classmethod	
+    @classmethod
     def scenario(cls, message):
         def proccessed_fn(fn):
             def wrapper(*args, **kwargs):
@@ -211,9 +212,9 @@ class Logger(object):
                 IO.process_end()
             return wrapper
         return proccessed_fn
-             
+
 class IO(object):
-    
+
     # Dictionary with the ansi codes for terminal color
     # "BRG" stands for bright color
     # "BG" stands for background color
@@ -271,7 +272,7 @@ class IO(object):
         IO._process_complete = False
         # If a resource queue is implemented, it will be prepared here
 
-    # Update the symbols for a process, and wrap up all IO threads. 
+    # Update the symbols for a process, and wrap up all IO threads.
     # The symbol is hard-coded, but should be any symbol to indicate
     # a process status
     @classmethod
@@ -291,12 +292,13 @@ class IO(object):
     def use_symbol(cls, new_symbol):
         IO.symbol = new_symbol.split(',')
 
-    # Draws a separator line with an optional centered label and separator character
+    # Draws a separator line with an optional
+    # centered label and separator character.
     @classmethod
     def draw_separator(cls, label=None, sep='-'):
         # Get the current terminal width (1). Replace with subprocess.
         width = int(os.popen('stty size', 'r').read().split()[1])
-        if label is None: 
+        if label is None:
             sys.stdout.write(sep * width)
         else:
             label = "{0:^{n}}".format(label, n=(len(label)+12))
@@ -305,13 +307,14 @@ class IO(object):
             sys.stdout.write(sep * ((width - len(label)) // 2))
         sys.stdout.flush()
 
-    # Just add a '\n' to the buffer. Some threaded methods use this. 
+    # Just add a '\n' to the buffer. Some threaded methods use this.
     @classmethod
     def new_line(cls):
         sys.stdout.write('\n')
         sys.stdout.flush()
 
-    # Print an animation, threaded so any other process continues without issues.
+    # Print an animation, threaded so any
+    # other process continues without issues.
     @classmethod
     @Threaded(_threads)
     def fancy_print(cls, message, fps=10):
@@ -349,8 +352,7 @@ class IO(object):
         IO.move_cursor_to_c(6)
         sys.stdout.write('└' + '─' * length + '\n')
         sys.stdout.flush()
-        
-    
+
     # Prints the last command executed, for debugging.
     @classmethod
     def last_command_print(cls):
@@ -367,11 +369,11 @@ class IO(object):
     @classmethod
     def move_cursor_forward(cls, n):
         sys.stdout.write("\x1b[{}C".format(n))
-        
+
     @classmethod
     def move_cursor_backward(cls, n):
         sys.stdout.write("\x1b[{}D".format(n))
-        
+
     @classmethod
     def reset_cursor(cls):
         sys.stdout.write("\x1b[u")
@@ -390,6 +392,7 @@ class IO(object):
         else:
             pass
 
+
 class Timer(object):
     def __init__(self):
         pass
@@ -403,9 +406,10 @@ class Timer(object):
     def elapsed_time(self):
         return Timer.endtime - Timer.starttime
 
+
 def _handle_exc(exc_type, exc_value, exc_traceb):
     """
-    Overrides Python's error handling for Pyroute Exceptions, and only Pyroute 
+    Overrides Python's error handling for Pyroute Exceptions, and only Pyroute
     Exceptions (including Modules)
     """
     exc_message = str(exc_value) if str(exc_value) != "" else str(exc_type.__name__)
@@ -419,12 +423,12 @@ def _handle_exc(exc_type, exc_value, exc_traceb):
         return
     if issubclass(exc_type, Exception):
         Logger.failure(exc_message)
-        #IO.draw_separator(label=" Python's Traceback ")
+        # IO.draw_separator(label=" Python's Traceback ")
         IO.new_line()
-        #sys.__excepthook__(exc_type, exc_value, exc_traceb)
-        #IO.draw_separator()
-        #IO.new_line()
+        # sys.__excepthook__(exc_type, exc_value, exc_traceb)
+        # IO.draw_separator()
+        # IO.new_line()
         return
 
-sys.excepthook = _handle_exc
 
+sys.excepthook = _handle_exc

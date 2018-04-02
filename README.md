@@ -39,24 +39,41 @@ alias pyrouteenv=pyroute_activate
 {
     "tests": {
         "path": [
-            "tests/sprint01_features"
-             ],
+    "tests/modules/webdriver/WDM_test_get_current_url.py"
+                ],
         "preffix": "test_",
-        "data": "$PATH"
-    },
+        "data": "$PATH",
+		    "verbosity": "LOW"
+   },
     "modules": {
-        "REST": {
-            "timeout": "50000",
-            "endpoint": "http://google.com",
-            "reset_headers": "True",
-            "otro_param": "here"
-        },
-        "SSH": {
-            "computer": "computer_Service"
-        }
-    }
-
+        "webdriver": {
+        	"desired_capabilities": {
+            	"browserName": "firefox",
+            	"version": "57"
+          		},
+        "keep_cookies": "1",
+        "host": "http://127.0.0.1:4444/wd/hub",
+        "url": "http://www.enroute.xyz"
+        			}
+   				},
+    "colors": {
+        "color": "on",
+        "custom": "BRG_CYAN",
+        "error": "RED",
+        "failure": "BRG_RED",
+        "loading_modules": "BRG_WHITE",
+        "loading_tests": "BRG_WHITE",
+        "modules_loaded": "BRG_WHITE",
+        "passed_time": "BRG_GREEN",
+        "pyroute_logo": "BRG_YELLOW",
+        "running_test": "BRG_WHITE",
+        "finished_test": "BRG_CYAN",
+        "tests_completed": "BRG_GREEN",
+        "tests_loaded": "BRG_WHITE",
+        "warning": "ORANGE"
+      }
 }
+
 ```
 
 * Create a `pyroute_tests_folder` folder

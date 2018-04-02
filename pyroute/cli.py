@@ -9,13 +9,15 @@ DEFAULT_CONFIG_JSON = '{}/config/config.json'.format(os.getcwd())
 
 @click.group()
 def runnable():
+    """
+    """
     pass
 
 
 @runnable.command()
 def init():
     """
-    Initialize a testing project, allows user to select different options.
+    Initializes a testing project, allows the user to select different options.
     """
     pass
 
@@ -23,7 +25,7 @@ def init():
 @runnable.command()
 def create():
     """
-    Create page objects, custom modules, test data, etc. etc.
+    Creates the page objects, custom modules, test data, etc.
     """
     pass
 
@@ -32,8 +34,7 @@ def create():
 @click.option('--config', default=DEFAULT_CONFIG_JSON,
               help='Location of config file')
 def run(config):
-    """
-    Allows you to run tests.
+    """Allows you to run tests.
     """
     msg = 'Using config.json location: {}'.format(config)
 
@@ -43,7 +44,6 @@ def run(config):
 
 @runnable.command()
 def shell():
-    """
-    Use an interactive shell to test your modules with Pyroute env.
+    """Use an interactive shell to test your modules with Pyroute env.
     """
     pass
