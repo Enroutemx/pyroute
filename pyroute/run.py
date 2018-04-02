@@ -19,9 +19,9 @@ class Run(object):
 
     def execute_tests(self):
         Logger.count_time()
-        
+
         # Initialize Engine
-        self.run_log.separate(self.config._colors['pyroute_logo'] ,"Pyroute Acceptance Testing Framework (insert logo)")
+        self.run_log.separate(self.config._colors['pyroute_logo'], "Pyroute Acceptance Testing Framework (insert logo)")
         session = Pyroute.EngineInitializer(self.config)
 
         # Start testing

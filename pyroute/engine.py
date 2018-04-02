@@ -105,12 +105,12 @@ class PyrouteTestEngine(object):
         """
         tests_path = []
         for test in self.config._tests['path']:
-            test_path = '{}/{}'.format(os.getcwd(),test)
+            test_path = '{}/{}'.format(os.getcwd(), test)
             py_file = '{}.py'.format(test_path)
             if os.path.isdir(test_path):
                 folder = os.listdir(test_path)
-                files =[os.path.join(test_path, file) for\
-                file in folder if file.endswith(".py")]
+                files = [os.path.join(test_path, file) for\
+                         file in folder if file.endswith(".py")]
                 [tests_path.append(file) for file in files]
             if os.path.isfile(py_file):
                 tests_path.append(py_file)
@@ -173,7 +173,8 @@ class PyrouteTestEngine(object):
             passed += 1
         self.finish(passed)
 
-    # This function runs at the end of all tests, anything done at that time goes here
+    # This function runs at the end of all tests,
+    # anything done at that time goes here
     def finish(self, passed_tests):
         self.engine_log.custom("[>:D]", "All tests completed", self.config._colors['tests_completed'])
         self.engine_log.separate(self.config._colors['passed_time'], "<<<< {0} Passed in {1:.3}s >>>>".format(passed_tests, Logger.elapsed_time()))

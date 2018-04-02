@@ -1,4 +1,5 @@
-"""The config module loads the framework modules specified by the user, 
+"""
+The config module loads the framework modules specified by the user,
 user's tests and settings from the default config.json, unless a different
 file is choosen by the user.
 
@@ -6,7 +7,7 @@ When **pryoute run** is used, the default config.json will be loaded.
 
 .. code-block:: console
 
-   $ pyroute run 
+   $ pyroute run
 
 Below is shown how to use a specific json file.
 
@@ -29,7 +30,8 @@ logger = logging.getLogger(__name__)
 class Configuration(object):
 
     def __init__(self, config_path):
-        """The class loads the json file into the variables:
+        """
+        The class loads the json file into the variables:
 
         - self._tests
         - self._modules
@@ -44,7 +46,9 @@ class Configuration(object):
         self._colors = config['colors']
 
     def load_configs(self, config_path):
-        """This method takes the config_path and load the configuration from a json file.
+        """
+        This method takes the config_path and load the
+        configuration from a json file.
 
         :param config_path: Relative path to the json file.
         :type config_path: str.
@@ -57,7 +61,7 @@ class Configuration(object):
                 if config_path.endswith("json"):
                     return json.load(data_file)
                 elif config_path.endswith("yaml") or\
-                config_path.endswith("yml"):
+                        config_path.endswith("yml"):
                     return yaml.load(data_file)
                 elif config_path.endswith("toml"):
                     return toml.load(data_file)

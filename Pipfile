@@ -10,6 +10,8 @@ click = "*"
 requests = "*"
 pytest = "*"
 selenium = "*"
+"flake8" = "*"
+"e1839a8" = {path = ".", editable = true}
 
 
 [requires]
